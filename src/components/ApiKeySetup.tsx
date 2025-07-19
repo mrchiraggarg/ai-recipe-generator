@@ -6,6 +6,10 @@ interface ApiKeySetupProps {
   onApiKeySet: () => void;
 }
 
+// Default key to use if user does not provide one
+const DEFAULT_API_KEY =
+  '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';
+
 export const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onApiKeySet }) => {
   const [apiKey, setApiKey] = useState('');
   const [isValid, setIsValid] = useState(false);
@@ -18,10 +22,13 @@ export const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onApiKeySet }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValid) {
-      openaiService.setApiKey(apiKey);
-      onApiKeySet();
+    let keyToUse = apiKey;
+    // If user did not enter a key, use the default key
+    if (!keyToUse) {
+      keyToUse = DEFAULT_API_KEY;
     }
+    openaiService.setApiKey(keyToUse);
+    onApiKeySet();
   };
 
   return (
@@ -92,14 +99,19 @@ export const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onApiKeySet }) => {
                 Please enter a valid OpenAI API key (starts with 'sk-')
               </p>
             )}
+            {!apiKey && (
+              <p className="text-blue-600 text-sm mt-1">
+                No key? We'll use a default key for you.
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={!isValid}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+            // Button is always enabled, since we allow default key if none entered
+            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
           >
-            Save API Key & Start Cooking
+            {apiKey ? 'Save API Key & Start Cooking' : 'Use Default Key & Start Cooking'}
           </button>
         </form>
 
@@ -118,7 +130,7 @@ export const ApiKeySetup: React.FC<ApiKeySetupProps> = ({ onApiKeySet }) => {
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <p className="text-xs text-gray-600">
             <strong>Privacy Notice:</strong> Your API key is stored locally in your browser and never sent to our servers. 
-            It's only used to communicate directly with OpenAI\'s API from your browser.
+            It's only used to communicate directly with OpenAI's API from your browser.
           </p>
         </div>
       </div>
